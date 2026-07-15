@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2563EB">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>租赁记账</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--blue:#2563EB;--blue-dark:#1D4ED8;--green:#16A34A;--red:#DC2626;--orange:#EA580C;--gray:#F3F4F6;--gray2:#E5E7EB;--gray3:#9CA3AF;--text:#111827;--text2:#4B5563}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--gray);color:var(--text);font-size:16px;padding-bottom:80px}
+button{cursor:pointer;font-family:inherit;font-size:inherit;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:16px;width:100%;padding:12px;border:1.5px solid var(--gray2);border-radius:8px;outline:none;background:#fff;color:var(--text)}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+label{display:block;margin-bottom:6px;font-size:14px;color:var(--text2);font-weight:500}
+.field{margin-bottom:16px}
+.btn{padding:14px;border-radius:10px;font-weight:600;text-align:center;transition:opacity .2s}
+.btn:active{opacity:.7}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+.btn-outline{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}
+.btn-gray{background:var(--gray2);color:var(--text2)}
+.btn-block{width:100%}
+
+/* Header */
+.header{background:var(--blue);color:#fff;padding:16px;text-align:center;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:center}
+.header h1{font-size:20px;font-weight:600;flex:1}
+.header-add{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;cursor:pointer;border-radius:50%;position:absolute;right:16px}
+.header-add:active{background:rgba(255,255,255,.2)}
+
+/* Bottom Nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray2);display:flex;z-index:100}
+.nav-item{flex:1;padding:10px 0;text-align:center;color:var(--gray3);font-size:12px;transition:color .2s}
+.nav-item.active{color:var(--blue)}
+.nav-item .ico{font-size:22px;display:block;margin-bottom:2px}
+
+/* Pages */
+.page{display:none;padding:16px}
+.page.active{display:block}
+
+/* Cards */
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-tap:active{background:var(--gray)}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.stat-card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.stat-card .label{font-size:13px;color:var(--gray3);margin-bottom:4px}
+.stat-card .val{font-size:24px;font-weight:700}
+.stat-card .val.red{color:var(--red)}
+.stat-card .val.green{color:var(--green)}
+.stat-card .val.blue{color:var(--blue)}
+
+/* Badges */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600}
+.badge-red{background:#FEE2E2;color:var(--red)}
+.badge-green{background:#DCFCE7;color:var(--green)}
+.badge-orange{background:#FFEDD5;color:var(--orange)}
+.badge-gray{background:var(--gray2);color:var(--text2)}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;justify-content:center;align-items:flex-end}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;width:100%;max-width:500px;border-radius:16px 16px 0 0;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--gray2);position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0}
+.modal-header h2{font-size:18px;font-weight:600}
+.modal-body{padding:16px}
+.modal-footer{padding:16px;border-top:1px solid var(--gray2);display:flex;gap:12px;position:sticky;bottom:0;background:#fff}
+
+/* List items */
+.list-item{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--gray)}
+.list-item:last-child{border-bottom:none}
+.list-item .name{font-weight:600;margin-bottom:2px}
+.list-item .sub{font-size:13px;color:var(--gray3)}
+
+/* Empty state */
+.empty{text-align:center;padding:48px 16px;color:var(--gray3)}
+.empty .ico{font-size:48px;margin-bottom:12px}
+
+/* Section title */
+.section-title{font-size:14px;color:var(--gray3);margin:16px 0 8px;font-weight:500}
+
+/* Search */
+.search-box{margin-bottom:12px}
+.search-box input{padding-left:36px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239CA3AF' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E") no-repeat 12px center}
+
+/* FAB */
+.fab{position:fixed;right:16px;bottom:96px;width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(37,99,235,.4);z-index:90}
+.fab:active{transform:scale(.9)}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;padding:10px 8px;color:var(--gray3);font-size:13px;border-bottom:2px solid var(--gray2);font-weight:600}
+td{padding:10px 8px;border-bottom:1px solid var(--gray)}
+.right{text-align:right}
+.center{text-align:center}
+
+/* Toast */
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.8);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* Period tabs */
+.tabs{display:flex;background:var(--gray2);border-radius:8px;padding:3px;margin-bottom:16px}
+.tab{flex:1;padding:8px;text-align:center;border-radius:6px;font-size:14px;color:var(--text2);font-weight:500;transition:all .2s}
+.tab.active{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+/* Item rows in rental modal */
+.item-row{background:var(--gray);border-radius:8px;padding:12px;margin-bottom:8px;position:relative}
+.item-row .item-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px}
+.item-row .item-grid .field{margin-bottom:0}
+.item-row .item-grid label{font-size:11px;margin-bottom:2px}
+.item-row .item-grid input{padding:8px;font-size:14px}
+.item-row .item-del{position:absolute;top:4px;right:4px;width:24px;height:24px;line-height:24px;text-align:center;color:var(--red);font-size:18px;cursor:pointer}
+.total-bar{background:var(--blue);color:#fff;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.total-bar .lbl{font-size:14px;opacity:.9}
+.total-bar .val{font-size:22px;font-weight:700}
+.add-item-btn{border:1.5px dashed var(--blue);color:var(--blue);background:#fff;border-radius:8px;padding:10px;text-align:center;font-weight:600;margin-bottom:16px;cursor:pointer}
+.add-item-btn:active{opacity:.7}
+.preview-item{padding:12px 0;border-bottom:1px solid var(--gray2)}
+.preview-item:last-child{border-bottom:none}
+.preview-item .del{color:var(--red);font-size:13px;padding:4px 10px;border-radius:6px;background:#FEE2E2}
+.preview-item .del:active{opacity:.7}
+.client-input-wrap{position:relative}
+.client-dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--blue);border-top:none;border-radius:0 0 8px 8px;z-index:10;max-height:200px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.client-dropdown.show{display:block}
+.client-dropdown-item{padding:12px 14px;cursor:pointer;font-size:15px}
+.client-dropdown-item:active,.client-dropdown-item:hover{background:var(--gray)}
+.client-dropdown-item .phone{font-size:12px;color:var(--gray3);margin-left:8px}
+</style>
+</head>
+<body>
+
+<div class="header"><h1>租赁记账</h1><div class="header-add" onclick="openClientModal()">+</div></div>
+
+<!-- ========== 首页 ========== -->
+<div class="page active" id="page-home">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="label">应收总额</div><div class="val blue" id="stat-total">¥0</div></div>
+    <div class="stat-card"><div class="label">已收金额</div><div class="val green" id="stat-received">¥0</div></div>
+    <div class="stat-card"><div class="label">待收欠款</div><div class="val red" id="stat-owed">¥0</div></div>
+    <div class="stat-card"><div class="label">客户数量</div><div class="val" id="stat-clients">0</div></div>
+  </div>
+
+  <div class="section-title">最近租赁记录</div>
+  <div id="recent-rentals"></div>
+
+  <div class="section-title">欠款提醒（按金额排序）</div>
+  <div id="debt-list"></div>
+</div>
+
+<!-- ========== 客户页 ========== -->
+<div class="page" id="page-clients">
+  <div class="search-box"><input type="text" id="client-search" placeholder="搜索客户名称或电话"></div>
+  <div id="client-list"></div>
+</div>
+
+<!-- ========== 记录页 ========== -->
+<div class="page" id="page-rentals">
+  <div class="search-box"><input type="text" id="rental-search" placeholder="搜索客户或物品"></div>
+  <div class="tabs">
+    <div class="tab active" data-filter="all">全部</div>
+    <div class="tab" data-filter="unpaid">待收款</div>
+    <div class="tab" data-filter="paid">已结清</div>
+    <div class="tab" data-filter="overdue">超期</div>
+  </div>
+  <div id="rental-list"></div>
+</div>
+
+<!-- ========== 报表页 ========== -->
+<div class="page" id="page-reports">
+  <div class="tabs">
+    <div class="tab active" data-period="month">月度</div>
+    <div class="tab" data-period="quarter">季度</div>
+    <div class="tab" data-period="year">年度</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <label style="margin-bottom:8px">选择时间</label>
+    <div id="period-selector" style="display:flex;gap:12px;justify-content:center"></div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--gray3);margin-bottom:4px">应收总额</div>
+    <div style="font-size:28px;font-weight:700;color:var(--blue)" id="rp-total">¥0</div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--gray3);margin-bottom:4px">已收金额</div>
+    <div style="font-size:28px;font-weight:700;color:var(--green)" id="rp-received">¥0</div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--gray3);margin-bottom:4px">待收欠款</div>
+    <div style="font-size:28px;font-weight:700;color:var(--red)" id="rp-owed">¥0</div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--gray3);margin-bottom:8px">租赁笔数</div>
+    <div style="font-size:22px;font-weight:600" id="rp-count">0 笔</div>
+  </div>
+  <div class="card">
+    <div class="section-title" style="margin-top:0">客户欠款排名</div>
+    <div id="rp-ranking"></div>
+  </div>
+</div>
+
+<!-- ========== 设置页 ========== -->
+<div class="page" id="page-settings">
+  <div class="card card-tap" onclick="exportData()">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-weight:600;margin-bottom:2px">导出备份数据</div><div style="font-size:13px;color:var(--gray3)">保存所有数据到文件</div></div>
+      <div style="color:var(--blue);font-size:20px">›</div>
+    </div>
+  </div>
+  <div class="card card-tap" onclick="exportExcel()">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-weight:600;margin-bottom:2px">导出 Excel 报表</div><div style="font-size:13px;color:var(--gray3)">下载租赁明细和客户欠款表</div></div>
+      <div style="color:var(--blue);font-size:20px">›</div>
+    </div>
+  </div>
+  <div class="card card-tap" onclick="document.getElementById('import-file').click()">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-weight:600;margin-bottom:2px">导入恢复数据</div><div style="font-size:13px;color:var(--gray3)">从备份文件恢复</div></div>
+      <div style="color:var(--blue);font-size:20px">›</div>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+  <div class="card card-tap" onclick="clearAllData()">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-weight:600;margin-bottom:2px;color:var(--red)">清空所有数据</div><div style="font-size:13px;color:var(--gray3)">删除全部记录，不可恢复</div></div>
+      <div style="color:var(--red);font-size:20px">›</div>
+    </div>
+  </div>
+  <div class="card" style="text-align:center;color:var(--gray3);font-size:13px">
+    <div style="font-weight:600;color:var(--text2);margin-bottom:4px">租赁记账系统</div>
+    <div>数据保存在手机本地</div>
+    <div style="margin-top:8px">如需换手机，请先导出备份</div>
+  </div>
+</div>
+
+<!-- FAB -->
+<div class="fab" onclick="openRentalModal()">+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="switchPage('home')"><span class="ico">🏠</span>首页</div>
+  <div class="nav-item" onclick="switchPage('clients')"><span class="ico">👥</span>客户</div>
+  <div class="nav-item" onclick="switchPage('rentals')"><span class="ico">📋</span>记录</div>
+  <div class="nav-item" onclick="switchPage('reports')"><span class="ico">📊</span>报表</div>
+  <div class="nav-item" onclick="switchPage('settings')"><span class="ico">⚙️</span>设置</div>
+</div>
+
+<!-- ========== 租赁记账弹窗 ========== -->
+<div class="modal-overlay" id="modal-rental">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="rental-modal-title">新增租赁</h2>
+      <button onclick="closeModal('modal-rental')" style="font-size:24px;color:var(--gray3)">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="rental-id">
+      <div class="field">
+        <label>客户 *</label>
+        <div class="client-input-wrap">
+          <input type="text" id="rental-client-input" placeholder="输入客户名称" autocomplete="off" oninput="onClientInput(this.value)" onfocus="onClientInput(this.value)" onblur="setTimeout(()=>hideClientDropdown(),150)">
+          <div class="client-dropdown" id="client-dropdown"></div>
+        </div>
+        <input type="hidden" id="rental-client">
+      </div>
+      <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <label style="margin-bottom:0">租赁物品明细 *</label>
+      </div>
+      <!-- 输入行 -->
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:12px">
+        <div class="field" style="margin-bottom:0"><label>物品名称</label><input type="text" id="ii-name" placeholder="如:篷房" onkeydown="if(event.key==='Enter')addPreviewItem()"></div>
+        <div class="field" style="margin-bottom:0"><label>单位(选填)</label><input type="text" id="ii-unit" placeholder="如:平" onkeydown="if(event.key==='Enter')addPreviewItem()"></div>
+        <div class="field" style="margin-bottom:0"><label>数量</label><input type="number" id="ii-qty" placeholder="0" inputmode="decimal" onkeydown="if(event.key==='Enter')addPreviewItem()"></div>
+        <div class="field" style="margin-bottom:0"><label>单价</label><input type="number" id="ii-price" placeholder="0" inputmode="decimal" onkeydown="if(event.key==='Enter')addPreviewItem()"></div>
+        <button class="btn btn-primary" style="padding:12px 14px;margin-bottom:0;height:44px;font-size:14px" onclick="addPreviewItem()">添加</button>
+      </div>
+      <!-- 预览列表 -->
+      <div id="rental-items-preview"></div>
+      <div class="total-bar">
+        <span class="lbl">合计总价</span>
+        <span class="val" id="rental-total-display">¥0</span>
+      </div>
+      <input type="hidden" id="rental-total">
+      <div class="field">
+        <label>已收金额（元）</label>
+        <input type="number" id="rental-paid" placeholder="0" inputmode="decimal">
+      </div>
+      <div style="display:flex;gap:12px">
+        <div class="field" style="flex:1">
+          <label>租赁日期 *</label>
+          <input type="date" id="rental-date">
+        </div>
+        <div class="field" style="flex:1">
+          <label>到期日期</label>
+          <input type="date" id="rental-due">
+        </div>
+      </div>
+      <div class="field">
+        <label>收款方式</label>
+        <select id="rental-method">
+          <option value="微信">微信</option>
+          <option value="支付宝">支付宝</option>
+          <option value="现金">现金</option>
+          <option value="银行转账">银行转账</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>备注</label>
+        <textarea id="rental-note" rows="2" placeholder="选填"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" style="flex:1" onclick="closeModal('modal-rental')">取消</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveRental()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 收款弹窗 ========== -->
+<div class="modal-overlay" id="modal-payment">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>记录收款</h2>
+      <button onclick="closeModal('modal-payment')" style="font-size:24px;color:var(--gray3)">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="payment-rental-id">
+      <div class="card" style="background:var(--gray);margin-bottom:16px">
+        <div id="payment-info"></div>
+      </div>
+      <div class="field">
+        <label>本次收款金额（元）*</label>
+        <input type="number" id="payment-amount" placeholder="0" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>收款方式</label>
+        <select id="payment-method">
+          <option value="微信">微信</option>
+          <option value="支付宝">支付宝</option>
+          <option value="现金">现金</option>
+          <option value="银行转账">银行转账</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>收款日期 *</label>
+        <input type="date" id="payment-date">
+      </div>
+      <div class="field">
+        <label>备注</label>
+        <textarea id="payment-note" rows="2" placeholder="选填"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" style="flex:1" onclick="closeModal('modal-payment')">取消</button>
+      <button class="btn btn-green" style="flex:2" onclick="savePayment()">确认收款</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 客户弹窗 ========== -->
+<div class="modal-overlay" id="modal-client">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="client-modal-title">新增客户</h2>
+      <button onclick="closeModal('modal-client')" style="font-size:24px;color:var(--gray3)">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="client-id">
+      <div class="field">
+        <label>客户名称 *</label>
+        <input type="text" id="client-name" placeholder="如：张三/XX公司">
+      </div>
+      <div class="field">
+        <label>联系电话</label>
+        <input type="tel" id="client-phone" placeholder="选填" inputmode="tel">
+      </div>
+      <div class="field">
+        <label>备注</label>
+        <textarea id="client-note" rows="2" placeholder="选填"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" style="flex:1" onclick="closeModal('modal-client')">取消</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveClient()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ 数据层 ============
+const DB = {
+  clients: 'rental_clients',
+  rentals: 'rental_records',
+  payments: 'rental_payments'
+};
+
+function load(key){ try{return JSON.parse(localStorage.getItem(key))||[]}catch(e){return[]} }
+function save(key,data){ localStorage.setItem(key, JSON.stringify(data)); }
+
+function getClients(){ return load(DB.clients); }
+function getRentals(){ return load(DB.rentals); }
+function getPayments(){ return load(DB.payments); }
+
+// ============ 工具函数 ============
+function fmt(n){ return '¥' + Number(n||0).toLocaleString('zh-CN',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+function today(){ return new Date().toISOString().slice(0,10); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1500); }
+function daysBetween(d1,d2){ return Math.ceil((new Date(d2)-new Date(d1))/86400000); }
+function isOverdue(r){ return r.dueDate && !isSettled(r) && new Date(r.dueDate) < new Date(today()); }
+function isSettled(r){ return (r.totalAmount - r.paidAmount) <= 0; }
+function owed(r){ return Math.max(0, r.totalAmount - r.paidAmount); }
+
+// ============ 页面切换 ============
+function switchPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item')[['home','clients','rentals','reports','settings'].indexOf(name)].classList.add('active');
+  if(name==='home') renderHome();
+  if(name==='clients') renderClients();
+  if(name==='rentals') renderRentals();
+  if(name==='reports') renderReports();
+}
+
+// ============ 首页 ============
+function renderHome(){
+  const rentals = getRentals();
+  const clients = getClients();
+  let total=0, received=0, owedAmt=0;
+  rentals.forEach(r=>{ total+=r.totalAmount; received+=r.paidAmount; owedAmt+=owed(r); });
+  document.getElementById('stat-total').textContent = fmt(total);
+  document.getElementById('stat-received').textContent = fmt(received);
+  document.getElementById('stat-owed').textContent = fmt(owedAmt);
+  document.getElementById('stat-clients').textContent = clients.length;
+
+  // 最近记录
+  const recent = [...rentals].sort((a,b)=>b.createdAt-a.createdAt).slice(0,5);
+  const recentEl = document.getElementById('recent-rentals');
+  if(recent.length===0){
+    recentEl.innerHTML = '<div class="empty"><div class="ico">📋</div>暂无记录<br>点右下角 + 新增租赁</div>';
+  } else {
+    recentEl.innerHTML = recent.map(r=>{
+      const c = clients.find(c=>c.id===r.clientId);
+      return `<div class="card card-tap" onclick="viewRental('${r.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div><div style="font-weight:600;margin-bottom:4px">${c?c.name:'已删客户'}</div><div style="font-size:13px;color:var(--gray3)">${itemsSummary(r.items)}</div></div>
+          <div style="text-align:right">
+            <div style="font-weight:600">${fmt(r.totalAmount)}</div>
+            ${isSettled(r)?'<span class="badge badge-green">已结清</span>':isOverdue(r)?'<span class="badge badge-red">超期</span>':'<span class="badge badge-orange">待收 '+fmt(owed(r))+'</span>'}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // 欠款排名
+  const debts = clients.map(c=>{
+    const clientRentals = rentals.filter(r=>r.clientId===c.id);
+    const amt = clientRentals.reduce((s,r)=>s+owed(r),0);
+    return {name:c.name, id:c.id, owed:amt};
+  }).filter(d=>d.owed>0).sort((a,b)=>b.owed-a.owed);
+  const debtEl = document.getElementById('debt-list');
+  if(debts.length===0){
+    debtEl.innerHTML = '<div class="empty"><div class="ico">✅</div>暂无欠款</div>';
+  } else {
+    debtEl.innerHTML = debts.slice(0,10).map(d=>
+      `<div class="card card-tap" onclick="viewClientDetail('${d.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:600">${d.name}</div>
+          <div style="font-weight:600;color:var(--red)">${fmt(d.owed)}</div>
+        </div>
+      </div>`
+    ).join('');
+  }
+}
+
+// ============ 客户管理 ============
+function renderClients(){
+  const q = document.getElementById('client-search').value.toLowerCase();
+  let clients = getClients();
+  if(q) clients = clients.filter(c=>c.name.toLowerCase().includes(q)||(c.phone||'').includes(q));
+  const rentals = getRentals();
+  const el = document.getElementById('client-list');
+  if(clients.length===0){
+    el.innerHTML = '<div class="empty"><div class="ico">👥</div>暂无客户<br>点右下角 + 新增</div>';
+    return;
+  }
+  el.innerHTML = clients.sort((a,b)=>a.name.localeCompare(b.name)).map(c=>{
+    const cr = rentals.filter(r=>r.clientId===c.id);
+    const owedAmt = cr.reduce((s,r)=>s+owed(r),0);
+    return `<div class="card card-tap" onclick="viewClientDetail('${c.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-weight:600;margin-bottom:2px">${c.name}</div><div style="font-size:13px;color:var(--gray3)">${c.phone||'无电话'} · ${cr.length}笔租赁</div></div>
+        <div style="text-align:right">${owedAmt>0?'<span style="font-weight:600;color:var(--red)">'+fmt(owedAmt)+'</span>':'<span class="badge badge-green">已结清</span>'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function viewClientDetail(id){
+  const clients = getClients();
+  const c = clients.find(c=>c.id===id);
+  if(!c) return;
+  const rentals = getRentals().filter(r=>r.clientId===id);
+  let html = `<div style="margin-bottom:16px">
+    <div style="font-size:20px;font-weight:700">${c.name}</div>
+    <div style="color:var(--gray3);font-size:14px">${c.phone||'无电话'}</div>
+    ${c.note?'<div style="color:var(--text2);font-size:14px;margin-top:4px">'+c.note+'</div>':''}
+  </div>`;
+  if(rentals.length===0){
+    html += '<div class="empty">该客户暂无租赁记录</div>';
+  } else {
+    html += '<div class="section-title">租赁记录</div>';
+    html += rentals.sort((a,b)=>b.createdAt-a.createdAt).map(r=>`
+      <div class="card card-tap" onclick="viewRental('${r.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div><div style="font-weight:600;margin-bottom:4px">${itemsSummary(r.items)}</div><div style="font-size:13px;color:var(--gray3)">${r.date}</div></div>
+          <div style="text-align:right"><div>${fmt(r.totalAmount)}</div>${isSettled(r)?'<span class="badge badge-green">已结清</span>':isOverdue(r)?'<span class="badge badge-red">超期</span>':'<span class="badge badge-orange">欠'+fmt(owed(r))+'</span>'}</div>
+        </div>
+      </div>`).join('');
+  }
+  html += `<div style="display:flex;gap:12px;margin-top:16px">
+    <button class="btn btn-outline" style="flex:1" onclick="editClient('${id}')">编辑客户</button>
+    <button class="btn btn-red" style="flex:1" onclick="deleteClient('${id}')">删除客户</button>
+  </div>`;
+  showDetailModal(c.name, html);
+}
+
+// ============ 租赁记录 ============
+let rentalFilter = 'all';
+function renderRentals(){
+  const q = document.getElementById('rental-search').value.toLowerCase();
+  let rentals = getRentals();
+  const clients = getClients();
+  if(q) rentals = rentals.filter(r=>{
+    const c = clients.find(c=>c.id===r.clientId);
+    return (c&&c.name.toLowerCase().includes(q))||itemsSummary(r.items).toLowerCase().includes(q);
+  });
+  if(rentalFilter==='unpaid') rentals = rentals.filter(r=>!isSettled(r)&&!isOverdue(r));
+  if(rentalFilter==='paid') rentals = rentals.filter(r=>isSettled(r));
+  if(rentalFilter==='overdue') rentals = rentals.filter(r=>isOverdue(r));
+  const el = document.getElementById('rental-list');
+  if(rentals.length===0){
+    el.innerHTML = '<div class="empty"><div class="ico">📋</div>暂无记录</div>';
+    return;
+  }
+  el.innerHTML = rentals.sort((a,b)=>b.createdAt-a.createdAt).map(r=>{
+    const c = clients.find(c=>c.id===r.clientId);
+    let badge = isSettled(r)?'<span class="badge badge-green">已结清</span>':isOverdue(r)?'<span class="badge badge-red">超期</span>':'<span class="badge badge-orange">待收</span>';
+    return `<div class="card card-tap" onclick="viewRental('${r.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div><div style="font-weight:600;margin-bottom:4px">${c?c.name:'已删客户'}</div><div style="font-size:13px;color:var(--gray3)">${itemsSummary(r.items)} · ${r.date}</div></div>
+        <div style="text-align:right"><div style="font-weight:600">${fmt(r.totalAmount)}</div><div style="margin-top:2px">${badge}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function viewRental(id){
+  const r = getRentals().find(r=>r.id===id);
+  if(!r) return;
+  const c = getClients().find(c=>c.id===r.clientId);
+  const payments = getPayments().filter(p=>p.rentalId===id);
+  let html = `<div style="margin-bottom:16px">
+    <div style="font-size:18px;font-weight:700">${c?c.name:'已删客户'}</div>
+    <div style="color:var(--gray3);font-size:14px">${r.date}${r.dueDate?' ~ '+r.dueDate:''}</div>
+  </div>
+  <div class="card" style="background:var(--gray)">
+    <div class="list-item"><div class="sub">租赁物品</div><div style="text-align:right">${itemsDetail(r.items)}</div></div>
+    <div class="list-item"><div class="sub">总金额</div><div style="font-weight:600">${fmt(r.totalAmount)}</div></div>
+    <div class="list-item"><div class="sub">已收金额</div><div style="color:var(--green);font-weight:600">${fmt(r.paidAmount)}</div></div>
+    <div class="list-item"><div class="sub">待收欠款</div><div style="color:var(--red);font-weight:600">${fmt(owed(r))}</div></div>
+    <div class="list-item"><div class="sub">收款方式</div><div>${r.method||'-'}</div></div>
+    ${r.note?'<div class="list-item"><div class="sub">备注</div><div>'+r.note+'</div></div>':''}
+  </div>`;
+  if(r.dueDate && !isSettled(r)){
+    const left = daysBetween(today(), r.dueDate);
+    html += `<div style="margin:12px 0;padding:8px 12px;border-radius:8px;background:${left<0?'#FEE2E2':'#FFEDD5'};color:${left<0?'var(--red)':'var(--orange)'};font-size:14px;text-align:center">
+      ${left<0?'已超期 '+(-left)+' 天':'距到期还有 '+left+' 天'}
+    </div>`;
+  }
+  html += '<div class="section-title">收款记录</div>';
+  if(payments.length===0){
+    html += '<div class="empty" style="padding:24px">暂无收款记录</div>';
+  } else {
+    html += payments.map(p=>`<div class="card" style="padding:12px 16px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-weight:600;color:var(--green)">${fmt(p.amount)}</div><div style="font-size:13px;color:var(--gray3)">${p.date} · ${p.method}</div></div>
+        <button class="btn btn-red" style="padding:6px 12px;font-size:13px" onclick="deletePayment('${p.id}','${r.id}')">删除</button>
+      </div>
+      ${p.note?'<div style="font-size:13px;color:var(--text2);margin-top:4px">'+p.note+'</div>':''}
+    </div>`).join('');
+  }
+  if(!isSettled(r)) html += `<button class="btn btn-green btn-block" style="margin-top:12px" onclick="closeDetailModal();openPaymentModal('${r.id}')">记录收款</button>`;
+  html += `<div style="display:flex;gap:12px;margin-top:12px">
+    <button class="btn btn-outline" style="flex:1" onclick="closeDetailModal();editRental('${r.id}')">编辑</button>
+    <button class="btn btn-red" style="flex:1" onclick="deleteRental('${r.id}')">删除</button>
+  </div>`;
+  showDetailModal('租赁详情', html);
+}
+
+// ============ 报表 ============
+let reportPeriod = 'month';
+let reportDate = today().slice(0,7);
+function renderReports(){
+  const selector = document.getElementById('period-selector');
+  if(reportPeriod==='month'){
+    selector.innerHTML = `<input type="month" id="rp-date" value="${reportDate}" style="flex:1" onchange="reportDate=this.value;renderReports()">`;
+  } else if(reportPeriod==='quarter'){
+    const y = reportDate.slice(0,4);
+    const m = parseInt(today().slice(5,7));
+    const q = Math.ceil(m/3);
+    selector.innerHTML = `<input type="number" id="rp-year" value="${y}" min="2020" max="2099" style="flex:1" onchange="reportDate=this.value+'-Q'+document.getElementById('rp-q').value;renderReports()"><select id="rp-q" style="flex:1" onchange="reportDate=document.getElementById('rp-year').value+'-Q'+this.value;renderReports()"><option value="1" ${q===1?'selected':''}>Q1(1-3月)</option><option value="2" ${q===2?'selected':''}>Q2(4-6月)</option><option value="3" ${q===3?'selected':''}>Q3(7-9月)</option><option value="4" ${q===4?'selected':''}>Q4(10-12月)</option></select>`;
+  } else {
+    selector.innerHTML = `<input type="number" id="rp-year" value="${reportDate}" min="2020" max="2099" style="flex:1" onchange="reportDate=this.value;renderReports()">`;
+  }
+  const rentals = getRentals();
+  const clients = getClients();
+  let filtered = rentals;
+  if(reportPeriod==='month'){
+    filtered = rentals.filter(r=>r.date.slice(0,7)===reportDate || r.dueDate&&r.dueDate.slice(0,7)===reportDate);
+  } else if(reportPeriod==='quarter'){
+    const [y,q] = reportDate.split('-Q');
+    const months = q==='1'?[1,2,3]:q==='2'?[4,5,6]:q==='3'?[7,8,9]:[10,11,12];
+    filtered = rentals.filter(r=>{ const m=parseInt((r.date||today()).slice(5,7)); return (r.date||'').slice(0,4)===y && months.includes(m); });
+  } else {
+    filtered = rentals.filter(r=>(r.date||'').slice(0,4)===reportDate);
+  }
+  let total=0, received=0, owedAmt=0;
+  filtered.forEach(r=>{ total+=r.totalAmount; received+=r.paidAmount; owedAmt+=owed(r); });
+  document.getElementById('rp-total').textContent = fmt(total);
+  document.getElementById('rp-received').textContent = fmt(received);
+  document.getElementById('rp-owed').textContent = fmt(owedAmt);
+  document.getElementById('rp-count').textContent = filtered.length + ' 笔';
+  // 排名
+  const debts = clients.map(c=>{
+    const amt = filtered.filter(r=>r.clientId===c.id).reduce((s,r)=>s+owed(r),0);
+    return {name:c.name, owed:amt, count:filtered.filter(r=>r.clientId===c.id).length};
+  }).filter(d=>d.owed>0).sort((a,b)=>b.owed-a.owed);
+  const rankEl = document.getElementById('rp-ranking');
+  if(debts.length===0){
+    rankEl.innerHTML = '<div style="text-align:center;color:var(--gray3);padding:12px">该期间无欠款</div>';
+  } else {
+    rankEl.innerHTML = debts.map((d,i)=>`<div class="list-item"><div><div class="name">${i+1}. ${d.name}</div><div class="sub">${d.count}笔租赁</div></div><div style="font-weight:600;color:var(--red)">${fmt(d.owed)}</div></div>`).join('');
+  }
+}
+
+// ============ 弹窗操作 ============
+function openRentalModal(){ editRental(null); }
+
+// 物品摘要（用于列表显示）
+function itemsSummary(items){
+  if(!items) return '-';
+  if(typeof items === 'string') return items; // 兼容旧数据
+  if(!Array.isArray(items) || items.length===0) return '-';
+  return items.map(i=>i.name+(i.unit?'('+i.unit+')':'')+' '+i.quantity+'×'+i.price).join('、');
+}
+
+// 物品明细（用于详情页显示，含小计）
+function itemsDetail(items){
+  if(!items) return '-';
+  if(typeof items === 'string') return items;
+  if(!Array.isArray(items) || items.length===0) return '-';
+  return items.map(i=>{
+    const sub = (i.quantity||0)*(i.price||0);
+    return `<div style="padding:4px 0;border-bottom:1px solid #E5E7EB"><div style="font-weight:600">${i.name}${i.unit?'（'+i.unit+'）':''}</div><div style="font-size:13px;color:var(--gray3)">${i.quantity} × ¥${i.price} = <span style="color:var(--blue);font-weight:600">¥${sub}</span></div></div>`;
+  }).join('');
+}
+
+// 预览列表数据
+window._previewItems = [];
+
+function renderPreviewList(){
+  const el = document.getElementById('rental-items-preview');
+  if(window._previewItems.length===0){
+    el.innerHTML = '<div style="color:var(--gray3);font-size:13px;text-align:center;padding:12px">还没有添加物品</div>';
+  } else {
+    el.innerHTML = window._previewItems.map((item,idx)=>{
+      const sub = (item.quantity||0)*(item.price||0);
+      return `<div class="preview-item">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:600">${item.name}${item.unit?'（'+item.unit+'）':''}</div>
+            <div style="font-size:13px;color:var(--gray3)">${item.quantity} × ¥${item.price} = <span style="color:var(--blue);font-weight:600">¥${sub}</span></div>
+          </div>
+          <span class="del" onclick="removePreviewItem(${idx})">删除</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  let total = window._previewItems.reduce((s,i)=>s+(i.quantity||0)*(i.price||0),0);
+  document.getElementById('rental-total').value = total;
+  document.getElementById('rental-total-display').textContent = fmt(total);
+}
+
+function addPreviewItem(){
+  const name = document.getElementById('ii-name').value.trim();
+  const unit = document.getElementById('ii-unit').value.trim();
+  const qty = parseFloat(document.getElementById('ii-qty').value)||0;
+  const price = parseFloat(document.getElementById('ii-price').value)||0;
+  if(!name){ toast('请填写物品名称'); return; }
+  if(qty<=0){ toast('请填写数量'); return; }
+  if(price<=0){ toast('请填写单价'); return; }
+  window._previewItems.push({name,unit,quantity:qty,price});
+  // 清空输入框
+  document.getElementById('ii-name').value = '';
+  document.getElementById('ii-unit').value = '';
+  document.getElementById('ii-qty').value = '';
+  document.getElementById('ii-price').value = '';
+  document.getElementById('ii-name').focus();
+  renderPreviewList();
+}
+
+function removePreviewItem(idx){
+  window._previewItems.splice(idx,1);
+  renderPreviewList();
+}
+
+function collectItems(){
+  return window._previewItems;
+}
+
+function editRental(id){
+  const r = id ? getRentals().find(r=>r.id===id) : null;
+  const clients = getClients();
+  const input = document.getElementById('rental-client-input');
+  const hidden = document.getElementById('rental-client');
+  hidden.value = '';
+  if(r){
+    const c = clients.find(c=>c.id===r.clientId);
+    if(c){ input.value = c.name; hidden.value = c.id; }
+    else { input.value = ''; hidden.value = ''; }
+  } else {
+    input.value = ''; hidden.value = '';
+  }
+  document.getElementById('rental-id').value = id||'';
+  document.getElementById('rental-modal-title').textContent = id?'编辑租赁':'新增租赁';
+  // 物品列表
+  document.getElementById('ii-name').value = '';
+  document.getElementById('ii-unit').value = '';
+  document.getElementById('ii-qty').value = '';
+  document.getElementById('ii-price').value = '';
+  if(r && Array.isArray(r.items) && r.items.length>0){
+    window._previewItems = r.items.map(i=>({...i}));
+  } else if(r && typeof r.items === 'string' && r.items){
+    window._previewItems = [{name:r.items, unit:'', quantity:1, price:r.totalAmount}];
+  } else {
+    window._previewItems = [];
+  }
+  renderPreviewList();
+  document.getElementById('rental-paid').value = r?r.paidAmount:0;
+  document.getElementById('rental-date').value = r?r.date:today();
+  document.getElementById('rental-due').value = r?r.dueDate||'':'';
+  document.getElementById('rental-method').value = r?r.method||'微信':'微信';
+  document.getElementById('rental-note').value = r?r.note||'':'';
+  openModal('modal-rental');
+}
+
+function saveRental(){
+  const id = document.getElementById('rental-id').value;
+  let clientName = document.getElementById('rental-client-input').value.trim();
+  let clientId = document.getElementById('rental-client').value;
+  // 如果有 hidden id 就用它，否则按名称匹配或新建
+  if(!clientId && clientName){
+    const found = getClients().find(c=>c.name===clientName);
+    if(found) clientId = found.id;
+    else {
+      // 自动创建客户
+      clientId = Date.now().toString();
+      const clients = getClients();
+      clients.push({id:clientId,name:clientName,phone:'',note:'',createdAt:Date.now()});
+      save(DB.clients, clients);
+    }
+  }
+  if(!clientId){ toast('请填写客户名称'); return; }
+  const items = collectItems();
+  const totalAmount = parseFloat(document.getElementById('rental-total').value)||0;
+  const paidAmount = parseFloat(document.getElementById('rental-paid').value)||0;
+  const date = document.getElementById('rental-date').value;
+  const dueDate = document.getElementById('rental-due').value;
+  const method = document.getElementById('rental-method').value;
+  const note = document.getElementById('rental-note').value.trim();
+  if(!clientId){ toast('请选择客户'); return; }
+  if(items.length===0){ toast('请至少添加一个物品'); return; }
+  if(totalAmount<=0){ toast('请填写数量和单价'); return; }
+  if(!date){ toast('请选择日期'); return; }
+  const rentals = getRentals();
+  if(id){
+    const r = rentals.find(r=>r.id===id);
+    Object.assign(r, {clientId,items,totalAmount,paidAmount,date,dueDate,method,note});
+  } else {
+    rentals.push({id:Date.now().toString(),clientId,items,totalAmount,paidAmount,date,dueDate,method,note,createdAt:Date.now()});
+  }
+  save(DB.rentals, rentals);
+  closeModal('modal-rental');
+  toast('保存成功');
+  refresh();
+}
+
+function deleteRental(id){
+  if(!confirm('确定删除该租赁记录？相关收款记录也会删除。')) return;
+  let rentals = getRentals().filter(r=>r.id!==id);
+  let payments = getPayments().filter(p=>p.rentalId!==id);
+  save(DB.rentals, rentals);
+  save(DB.payments, payments);
+  closeDetailModal();
+  toast('已删除');
+  refresh();
+}
+
+function openPaymentModal(rentalId){
+  const r = getRentals().find(r=>r.id===rentalId);
+  if(!r) return;
+  const c = getClients().find(c=>c.id===r.clientId);
+  document.getElementById('payment-rental-id').value = rentalId;
+  document.getElementById('payment-info').innerHTML = `
+    <div style="font-weight:600;margin-bottom:4px">${c?c.name:''}</div>
+    <div style="font-size:14px;color:var(--text2)">${itemsSummary(r.items)}</div>
+    <div style="display:flex;gap:16px;margin-top:8px">
+      <span>总额：${fmt(r.totalAmount)}</span>
+      <span style="color:var(--green)">已收：${fmt(r.paidAmount)}</span>
+      <span style="color:var(--red)">待收：${fmt(owed(r))}</span>
+    </div>`;
+  document.getElementById('payment-amount').value = owed(r);
+  document.getElementById('payment-method').value = r.method||'微信';
+  document.getElementById('payment-date').value = today();
+  document.getElementById('payment-note').value = '';
+  openModal('modal-payment');
+}
+
+function savePayment(){
+  const rentalId = document.getElementById('payment-rental-id').value;
+  const amount = parseFloat(document.getElementById('payment-amount').value)||0;
+  const method = document.getElementById('payment-method').value;
+  const date = document.getElementById('payment-date').value;
+  const note = document.getElementById('payment-note').value.trim();
+  if(amount<=0){ toast('请输入收款金额'); return; }
+  if(!date){ toast('请选择日期'); return; }
+  const rentals = getRentals();
+  const r = rentals.find(r=>r.id===rentalId);
+  if(!r) return;
+  if(amount > owed(r)+0.01){ toast('收款金额不能超过待收欠款'); return; }
+  r.paidAmount += amount;
+  save(DB.rentals, rentals);
+  const payments = getPayments();
+  payments.push({id:Date.now().toString(),rentalId,amount,method,date,note,createdAt:Date.now()});
+  save(DB.payments, payments);
+  closeModal('modal-payment');
+  toast('收款成功');
+  refresh();
+}
+
+function deletePayment(pid, rid){
+  if(!confirm('确定删除该收款记录？')) return;
+  const payments = getPayments();
+  const p = payments.find(p=>p.id===pid);
+  if(p){
+    const rentals = getRentals();
+    const r = rentals.find(r=>r.id===rid);
+    if(r){ r.paidAmount = Math.max(0, r.paidAmount - p.amount); save(DB.rentals, rentals); }
+  }
+  save(DB.payments, payments.filter(p=>p.id!==pid));
+  toast('已删除');
+  closeDetailModal();
+  refresh();
+}
+
+function openClientModal(){
+  editClient(null);
+}
+
+// 客户输入下拉
+function onClientInput(val){
+  const dropdown = document.getElementById('client-dropdown');
+  const q = val.trim().toLowerCase();
+  const clients = getClients();
+  const matches = q ? clients.filter(c=>c.name.toLowerCase().includes(q)) : clients;
+  if(matches.length===0 && q){
+    dropdown.innerHTML = `<div class="client-dropdown-item" onclick="selectClient('','','${val.trim()}')">
+      <span style="color:var(--blue)">+ 新建客户「${val.trim()}」</span>
+    </div>`;
+    dropdown.classList.add('show');
+  } else if(matches.length>0){
+    dropdown.innerHTML = matches.map(c=>`<div class="client-dropdown-item" onclick="selectClient('${c.id}','${c.name}','')">
+      ${c.name}<span class="phone">${c.phone||''}</span>
+    </div>`).join('');
+    dropdown.classList.add('show');
+  } else {
+    dropdown.classList.remove('show');
+  }
+}
+function selectClient(id, name, newName){
+  document.getElementById('rental-client-input').value = name || newName;
+  document.getElementById('rental-client').value = id;
+  hideClientDropdown();
+}
+function hideClientDropdown(){
+  document.getElementById('client-dropdown').classList.remove('show');
+}
+
+function editClient(id){
+  const c = id ? getClients().find(c=>c.id===id) : null;
+  document.getElementById('client-id').value = id||'';
+  document.getElementById('client-modal-title').textContent = id?'编辑客户':'新增客户';
+  document.getElementById('client-name').value = c?c.name||'':'';
+  document.getElementById('client-phone').value = c?c.phone||'':'';
+  document.getElementById('client-note').value = c?c.note||'':'';
+  openModal('modal-client');
+}
+
+function saveClient(){
+  const id = document.getElementById('client-id').value;
+  const name = document.getElementById('client-name').value.trim();
+  const phone = document.getElementById('client-phone').value.trim();
+  const note = document.getElementById('client-note').value.trim();
+  if(!name){ toast('请填写客户名称'); return; }
+  const clients = getClients();
+  let newId = '';
+  if(id){
+    const c = clients.find(c=>c.id===id);
+    Object.assign(c, {name,phone,note});
+  } else {
+    newId = Date.now().toString();
+    clients.push({id:newId,name,phone,note,createdAt:Date.now()});
+  }
+  save(DB.clients, clients);
+  closeModal('modal-client');
+  toast('保存成功');
+  refresh();
+}
+
+function deleteClient(id){
+  const hasRental = getRentals().some(r=>r.clientId===id);
+  if(hasRental && !confirm('该客户有租赁记录，删除后相关记录也会删除，确定删除？')) return;
+  if(!hasRental && !confirm('确定删除该客户？')) return;
+  save(DB.clients, getClients().filter(c=>c.id!==id));
+  save(DB.rentals, getRentals().filter(r=>r.clientId!==id));
+  closeDetailModal();
+  toast('已删除');
+  refresh();
+}
+
+// ============ 通用弹窗 ============
+let detailModalHTML = '';
+function showDetailModal(title, html){
+  let m = document.getElementById('modal-detail');
+  if(!m){
+    m = document.createElement('div');
+    m.id = 'modal-detail';
+    m.className = 'modal-overlay';
+    m.innerHTML = `<div class="modal"><div class="modal-header"><h2 id="detail-title"></h2><button onclick="closeDetailModal()" style="font-size:24px;color:var(--gray3)">✕</button></div><div class="modal-body" id="detail-body"></div></div>`;
+    document.body.appendChild(m);
+  }
+  document.getElementById('detail-title').textContent = title;
+  document.getElementById('detail-body').innerHTML = html;
+  m.classList.add('show');
+}
+function closeDetailModal(){ const m=document.getElementById('modal-detail'); if(m) m.classList.remove('show'); }
+
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+
+// ============ 导入导出 ============
+function exportData(){
+  const data = { clients:getClients(), rentals:getRentals(), payments:getPayments(), exportDate:new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '租赁记账备份_'+today()+'.json';
+  a.click();
+  toast('已导出');
+}
+
+function exportExcel(){
+  const clients = getClients();
+  const rentals = getRentals();
+  const payments = getPayments();
+
+  // CSV BOM for Excel UTF-8
+  let csv = '\uFEFF';
+
+  // Sheet 1: 租赁明细
+  csv += '租赁明细表\n';
+  csv += '日期,客户名称,客户电话,物品名称,单位,数量,单价,小计,总金额,已收金额,待收欠款,到期日期,收款方式,状态,备注\n';
+  rentals.forEach(r=>{
+    const c = clients.find(c=>c.id===r.clientId);
+    const clientName = c?c.name:'';
+    const clientPhone = c?c.phone:'';
+    const status = isSettled(r)?'已结清':isOverdue(r)?'超期':'待收款';
+    const o = owed(r);
+
+    if(Array.isArray(r.items) && r.items.length>0){
+      r.items.forEach((item,idx)=>{
+        const sub = (item.quantity||0)*(item.price||0);
+        csv += [
+          idx===0?r.date:'',
+          idx===0?clientName:'',
+          idx===0?clientPhone:'',
+          item.name,
+          item.unit||'',
+          item.quantity||'',
+          item.price||'',
+          sub,
+          idx===0?r.totalAmount:'',
+          idx===0?r.paidAmount:'',
+          idx===0?o:'',
+          idx===0?(r.dueDate||''):'',
+          idx===0?(r.method||''):'',
+          idx===0?status:'',
+          idx===0?(r.note||''):''
+        ].map(v=>{
+          const s = String(v).replace(/"/g,'""');
+          if(s.includes(',') || s.includes('"') || s.includes('\n')) return '"'+s+'"';
+          return s;
+        }).join(',')+'\n';
+      });
+    } else {
+      const itemName = typeof r.items==='string'?r.items:'';
+      csv += [
+        r.date, clientName, clientPhone, itemName, '', '', '', '',
+        r.totalAmount, r.paidAmount, o, r.dueDate||'', r.method||'', status, r.note||''
+      ].map(v=>{
+        const s = String(v).replace(/"/g,'""');
+        if(s.includes(',') || s.includes('"') || s.includes('\n')) return '"'+s+'"';
+        return s;
+      }).join(',')+'\n';
+    }
+  });
+
+  csv += '\n\n';
+
+  // Sheet 2: 客户欠款汇总
+  csv += '客户欠款汇总表\n';
+  csv += '客户名称,联系电话,租赁笔数,总应收,总已收,待收欠款\n';
+  clients.forEach(c=>{
+    const cr = rentals.filter(r=>r.clientId===c.id);
+    const totalAmt = cr.reduce((s,r)=>s+r.totalAmount,0);
+    const paidAmt = cr.reduce((s,r)=>s+r.paidAmount,0);
+    const owedAmt = cr.reduce((s,r)=>s+owed(r),0);
+    csv += [c.name, c.phone||'', cr.length, totalAmt, paidAmt, owedAmt].map(v=>{
+      const s = String(v).replace(/"/g,'""');
+      if(s.includes(',') || s.includes('"') || s.includes('\n')) return '"'+s+'"';
+      return s;
+    }).join(',')+'\n';
+  });
+
+  // 未分配客户的记录
+  const orphanRentals = rentals.filter(r=>!clients.find(c=>c.id===r.clientId));
+  if(orphanRentals.length>0){
+    const totalAmt = orphanRentals.reduce((s,r)=>s+r.totalAmount,0);
+    const paidAmt = orphanRentals.reduce((s,r)=>s+r.paidAmount,0);
+    const owedAmt = orphanRentals.reduce((s,r)=>s+owed(r),0);
+    csv += ['已删除客户','', orphanRentals.length, totalAmt, paidAmt, owedAmt].map(v=>{
+      const s = String(v).replace(/"/g,'""');
+      if(s.includes(',') || s.includes('"') || s.includes('\n')) return '"'+s+'"';
+      return s;
+    }).join(',')+'\n';
+  }
+
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '租赁记账报表_'+today()+'.csv';
+  a.click();
+  toast('Excel报表已导出');
+}
+
+function importData(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(!confirm('导入将覆盖现有数据，确定继续？')) return;
+      if(data.clients) save(DB.clients, data.clients);
+      if(data.rentals) save(DB.rentals, data.rentals);
+      if(data.payments) save(DB.payments, data.payments);
+      toast('导入成功');
+      refresh();
+    }catch(err){ toast('文件格式错误'); }
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData(){
+  if(!confirm('确定清空所有数据？此操作不可恢复！')) return;
+  if(!confirm('再次确认：所有客户、租赁、收款记录都将删除！')) return;
+  localStorage.removeItem(DB.clients);
+  localStorage.removeItem(DB.rentals);
+  localStorage.removeItem(DB.payments);
+  toast('已清空');
+  refresh();
+}
+
+function refresh(){
+  const active = document.querySelector('.page.active');
+  if(active.id==='page-home') renderHome();
+  if(active.id==='page-clients') renderClients();
+  if(active.id==='page-rentals') renderRentals();
+  if(active.id==='page-reports') renderReports();
+}
+
+// ============ 事件绑定 ============
+document.getElementById('client-search').addEventListener('input', renderClients);
+document.getElementById('rental-search').addEventListener('input', renderRentals);
+document.querySelectorAll('#page-rentals .tab').forEach(t=>t.addEventListener('click',function(){
+  document.querySelectorAll('#page-rentals .tab').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+  rentalFilter = this.dataset.filter;
+  renderRentals();
+}));
+document.querySelectorAll('#page-reports .tab').forEach(t=>t.addEventListener('click',function(){
+  document.querySelectorAll('#page-reports .tab').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+  reportPeriod = this.dataset.period;
+  if(reportPeriod==='month') reportDate = today().slice(0,7);
+  else if(reportPeriod==='quarter') reportDate = today().slice(0,4)+'-Q'+Math.ceil(parseInt(today().slice(5,7))/3);
+  else reportDate = today().slice(0,4);
+  renderReports();
+}));
+
+// 点击遮罩关闭
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){ if(e.target===this) this.classList.remove('show'); }));
+
+// ============ Service Worker ============
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+// 初始化
+renderHome();
+</script>
+</body>
+</html>
